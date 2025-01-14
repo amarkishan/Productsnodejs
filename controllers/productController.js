@@ -17,7 +17,7 @@ const addProduct =async(req,res) =>
         catch(err)
         {
             console.log(err);
-            res.status(500).josn({message:"Something went wrong"})
+            res.status(500).json({message:"Something went wrong"});
         }
     } 
 const showProducts = async(req,res) =>
