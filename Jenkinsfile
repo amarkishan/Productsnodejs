@@ -37,7 +37,7 @@ pipeline {
                     bat "scp -i ${EC2_SSH_KEY} -r ./* ${EC2_INSTANCE}:${DEPLOY_DIR}"
                     
                     // SSH into EC2 and restart the application
-                    bat "ssh -i ${EC2_SSH_KEY} ${EC2_INSTANCE} 'cd ${DEPLOY_DIR} && npm install && pm2 restart app.js'"
+                    bat "ssh -i ${EC2_SSH_KEY} ${EC2_INSTANCE} 'cd ${DEPLOY_DIR} && npm install && pm2 restart index.js'"
                 }
             }
         }
