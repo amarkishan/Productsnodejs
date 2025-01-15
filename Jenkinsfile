@@ -15,6 +15,7 @@ pipeline {
                 echo 'Building..'
                 git branch: 'main', url: "${env.GIT_REPO}"
                 bat 'npm install'
+                bat 'npm build'
             }
         }
         
@@ -30,7 +31,7 @@ pipeline {
             steps {
                 script {
                     // Package the application
-                    bat 'npm run build'
+                    
                     
                     // Transfer files to EC2
                     bat "scp -i ${EC2_SSH_KEY} -r ./* ${EC2_INSTANCE}:${DEPLOY_DIR}"
