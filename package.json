@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --detectOpenHandles --forceExit",
-    "lint": "eslint 'src/**/*.js'",
+    "lint": "eslint 'src/**/*.js'"
     
   },
   "keywords": [],
