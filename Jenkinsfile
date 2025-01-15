@@ -14,15 +14,15 @@ pipeline {
             steps {
                 echo 'Building..'
                 git branch: 'main', url: "${env.GIT_REPO}"
-                bat 'npm install'
-                bat 'npm build'
+                sh 'npm install'
+                //bat 'npm build'
             }
         }
         
         stage('Test') {
             steps {
                 echo 'testing..'
-                bat 'npm test'
+                sh 'npm test'
                 echo 'testing completed'
             }
         }
@@ -34,10 +34,10 @@ pipeline {
                     
                     
                     // Transfer files to EC2
-                    bat "scp -i ${EC2_SSH_KEY} -r ./* ${EC2_INSTANCE}:${DEPLOY_DIR}"
+                    sh "scp -i ${EC2_SSH_KEY} -r ./* ${EC2_INSTANCE}:${DEPLOY_DIR}"
                     
                     // SSH into EC2 and restart the application
-                    bat "ssh -i ${EC2_SSH_KEY} ${EC2_INSTANCE} 'cd ${DEPLOY_DIR} && npm install && pm2 restart index.js'"
+                    sh "ssh -i ${EC2_SSH_KEY} ${EC2_INSTANCE} 'cd ${DEPLOY_DIR} && npm install && pm2 restart index.js'"
                 }
             }
         }
