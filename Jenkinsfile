@@ -6,7 +6,7 @@ pipeline {
     environment {
         EC2_INSTANCE = credentials('EC2_INSTANCE_CREDENTIAL')
         EC2_SSH_KEY = credentials('EC2_SSH_KEY_CREDENTIAL')
-        DEPLOY_DIR = '/path/to/deployment/directory'
+        DEPLOY_DIR = '/home/ec2-user/deploymnet/Productjs'
         GIT_REPO = 'https://github.com/amarkishan/Productsnodejs.git'
     }
     stages {
