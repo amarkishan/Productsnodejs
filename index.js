@@ -25,7 +25,7 @@ mongoose
     .connect("mongodb://127.0.0.1:27017/ecom1", { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
         console.log("Connected to MongoDB");
-        app.listen(8080, () => {
+        app.listen(9090, () => {
             console.log("Server is running on http://localhost:8080");
         });
     })
