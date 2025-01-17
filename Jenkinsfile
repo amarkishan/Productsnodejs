@@ -27,7 +27,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
-                sh 'npm install'
+                sh 'npm ci'
                 echo 'Done installing'
             }
         }
@@ -43,7 +43,7 @@ pipeline {
                                 rsync -avz -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" --exclude='node_modules' --exclude='.git' . ubuntu@18.118.217.86:/home/ubuntu/nodejsapp
                                 
                                 # SSH into the EC2 instance and install dependencies + start the app
-                                ssh -i $SSH_KEY -o StrictHostKeyChecking=no ubuntu@18.118.217.86 "cd /home/ubuntu/nodejsapp && npm install && pm2 start app.js --name 'my-node-app'"
+                                ssh -i $SSH_KEY -o StrictHostKeyChecking=no ubuntu@18.118.217.86 "cd /home/ubuntu/nodejsapp && npm ci && pm2 start app.js --name 'my-node-app'"
                             '''
                         } catch (Exception e) {
                             echo "Deployment failed: ${e}"
