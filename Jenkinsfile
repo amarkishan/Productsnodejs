@@ -1,44 +1,48 @@
 pipeline {
     agent any
+    
     tools {
-        nodejs "node"
+        nodejs 'Nodejs' 
     }
+    
     environment {
-        EC2_INSTANCE = credentials('EC2_INSTANCE_CREDENTIAL')
-        EC2_SSH_KEY = credentials('EC2_SSH_KEY_CREDENTIAL')
-        DEPLOY_DIR = '/home/ec2-user/deploymnet/Productjs'
-        GIT_REPO = 'https://github.com/amarkishan/Productsnodejs.git'
+        SSH_KEY = credentials('jenkins-ssh-id')  
     }
+    
     stages {
-        stage('Build') {
+        
+        stage('Test Node.js') {
             steps {
-                echo 'Building..'
-                git branch: 'main', url: "${env.GIT_REPO}"
-                sh 'npm install'
-                //bat 'npm build'
+                sh 'node -v'
+                sh 'npm -v'
             }
         }
         
-        stage('Test') {
+        stage('Checkout Git Repository') {
             steps {
-                echo 'testing..'
-                sh 'npm test'
-                echo 'testing completed'
+                git url: 'https://github.com/amarkishan/Productsnodejs.git', branch: 'main'
+            }
+        }
+
+        stage('Build')
+        {
+            steps
+            {
+                echo 'Building..'
+                npm install
+                echo 'done installing'
             }
         }
         
         stage('Deploy to EC2') {
             steps {
-                script {
-                    // Package the application
+                sh '''
+                    # Copy the application files to the EC2 instance
+                    rsync -avz -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" --exclude='node_modules' --exclude='.git' . ubuntu@3.149.249.99:/home/ubuntu/nodejsapp
                     
-                    
-                    // Transfer files to EC2
-                    sh "scp -i ${EC2_SSH_KEY} -r ./* ${EC2_INSTANCE}:${DEPLOY_DIR}"
-                    
-                    // SSH into EC2 and restart the application
-                    sh "ssh -i ${EC2_SSH_KEY} ${EC2_INSTANCE} 'cd ${DEPLOY_DIR} && npm install && pm2 restart index.js'"
-                }
+                    # SSH into the EC2 instance and install dependencies + start the app
+                    ssh -i $SSH_KEY -o StrictHostKeyChecking=no ubuntu@3.149.249.99 "cd /home/ubuntu/nodejsapp && npm install && pm2 start app.js --name 'my-node-app'"
+                '''
             }
         }
     }
