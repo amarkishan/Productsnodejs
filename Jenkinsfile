@@ -24,26 +24,49 @@ pipeline {
             }
         }
 
-        stage('Build')
-        {
-            steps
-            {
+        stage('Build') {
+            steps {
                 echo 'Building..'
                 sh 'npm install'
-                echo 'done installing'
+                echo 'Done installing'
             }
         }
         
         stage('Deploy to EC2') {
             steps {
-                sh '''
-                    # Copy the application files to the EC2 instance
-                    rsync -avz -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" --exclude='node_modules' --exclude='.git' . ubuntu@3.149.249.99:/home/ubuntu/nodejsapp
-                    
-                    # SSH into the EC2 instance and install dependencies + start the app
-                    ssh -i $SSH_KEY -o StrictHostKeyChecking=no ubuntu@3.149.249.99 "cd /home/ubuntu/nodejsapp && npm install && pm2 start app.js --name 'my-node-app'"
-                '''
+                // Add a timeout to the deployment stage
+                timeout(time: 10, unit: 'MINUTES') { // Adjust the time as needed
+                    script {
+                        try {
+                            sh '''
+                                # Copy the application files to the EC2 instance
+                                rsync -avz -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" --exclude='node_modules' --exclude='.git' . ubuntu@3.146.152.208:/home/ubuntu/nodejsapp
+                                
+                                # SSH into the EC2 instance and install dependencies + start the app
+                                ssh -i $SSH_KEY -o StrictHostKeyChecking=no ubuntu@3.146.152.208 "cd /home/ubuntu/nodejsapp && npm install && pm2 start app.js --name 'my-node-app'"
+                            '''
+                        } catch (Exception e) {
+                            echo "Deployment failed: ${e}"
+                            // Optionally, kill any hanging processes
+                            sh '''
+                                # Kill any hanging SSH or rsync processes
+                                pkill -f "ssh -i $SSH_KEY" || true
+                                pkill -f "rsync -avz" || true
+                            '''
+                            error("Deployment stage failed") // Fail the pipeline
+                        }
+                    }
+                }
             }
+        }
+    }
+    
+    post {
+        always {
+            echo "Pipeline completed (successfully or with errors)."
+        }
+        failure {
+            echo "Pipeline failed. Check the logs for details."
         }
     }
 }
