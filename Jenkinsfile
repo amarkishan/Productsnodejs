@@ -29,7 +29,7 @@ pipeline {
             steps
             {
                 echo 'Building..'
-                sh 'npm install'
+                sh 'npm ci'
                 echo 'done installing'
             }
         }
