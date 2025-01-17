@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
 //     });
 
 app.listen(9090, () => {
-            console.log("Server is running on http://localhost:8080");
+            console.log("Server is running on http://localhost:9090");
         });
 
 export default app;
