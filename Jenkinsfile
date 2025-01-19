@@ -34,7 +34,7 @@ pipeline {
         
         stage('Deploy to EC2') {
             steps {
-                timeout(time: 10, unit: 'MINUTES') {
+                timeout(time: 5, unit: 'MINUTES') {
                     script {
                       try {
                         // Call the deployment script and pass parameters
