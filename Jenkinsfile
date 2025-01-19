@@ -7,14 +7,14 @@ pipeline {
     
     environment {
         SSH_KEY = credentials('jenkins-ssh-id')  
+        EC2_IP = '18.118.217.86' // Or use a Jenkins credential for this
+        APP_DIR = '/home/ubuntu/nodejsapp'
     }
     
     stages {
-        
         stage('Test Node.js') {
             steps {
-                sh 'node -v'
-                sh 'npm -v'
+                sh 'node -v && npm -v'
             }
         }
         
@@ -26,34 +26,34 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Building..'
+                echo 'Installing dependencies...'
                 sh 'npm install'
-                echo 'Done installing'
             }
         }
         
         stage('Deploy to EC2') {
             steps {
-                // Add a timeout to the deployment stage
-                timeout(time: 10, unit: 'MINUTES') { // Adjust the time as needed
+                timeout(time: 10, unit: 'MINUTES') {
                     script {
-                        try {
-                            sh '''
-                                # Copy the application files to the EC2 instance
-                                rsync -avz -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" --exclude='node_modules' --exclude='.git' . ubuntu@18.118.217.86:/home/ubuntu/nodejsapp
-                                
-                                # SSH into the EC2 instance and install dependencies + start the app
-                                ssh -i $SSH_KEY -o StrictHostKeyChecking=no ubuntu@18.118.217.86 "cd /home/ubuntu/nodejsapp && npm ci && pm2 start app.js --name 'my-node-app'"
-                            '''
-                        } catch (Exception e) {
+                      try {
+                        // Call the deployment script and pass parameters
+                        sh """
+                            # Step 1: Make the deployment script executable
+                            # chmod +x adds execute permissions to the script so it can be run
+                        
+                            chmod +x deploy.sh &&\
+                            
+                            # Step 2: Run the deployment script with parameters
+                            # ./deploy.sh executes the script, passing the SSH key, EC2 IP, and app directory as arguments
+
+                            ./deploy.sh $SSH_KEY $EC2_IP $APP_DIR
+                         """
+                        }  catch (Exception e) {
                             echo "Deployment failed: ${e}"
-                            // Optionally, kill any hanging processes
-                            sh '''
-                                # Kill any hanging SSH or rsync processes
-                                pkill -f "ssh -i $SSH_KEY" || true
-                                pkill -f "rsync -avz" || true
-                            '''
-                            error("Deployment stage failed") // Fail the pipeline
+                            // Clean up hanging processes
+                            sh 'pkill -f "ssh -i $SSH_KEY" || true'
+                            sh 'pkill -f "rsync -avz" || true'
+                            error("Deployment stage failed")
                         }
                     }
                 }
