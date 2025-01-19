@@ -7,9 +7,9 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 AWS.config.update({
-    region: process.env.AWS_REGION,
-    accessKeyId:process.env.AWS_ACESS_KEY_ID,
-    secretAccessKey:process.env.AWS_SECRET_ACCESS_KEY,
+    region: "us-east-2",
+    // accessKeyId:process.env.AWS_ACESS_KEY_ID,
+    // secretAccessKey:process.env.AWS_SECRET_ACCESS_KEY,
 });
 
 const app = express();

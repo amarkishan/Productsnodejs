@@ -7,7 +7,7 @@ pipeline {
     
     environment {
         SSH_KEY = credentials('jenkins-ssh-id')  
-        EC2_IP = '13.59.167.40' // Or use a Jenkins credential for this
+        EC2_IP = '3.145.106.130' // Or use a Jenkins credential for this
         APP_DIR = '/home/ubuntu/nodejsapp'
     }
     
@@ -27,7 +27,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Installing dependencies...'
-                sh 'npm install'
+                sh 'npm ci'
                 sh 'npm run build'
             }
         }
