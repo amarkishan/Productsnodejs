@@ -9,7 +9,7 @@ pipeline {
     
         NODE_OPTIONS = '--max-old-space-size=4096'
 
-        SSH_KEY = credentials('jenkins-ssh-id')  
+        // SSH_KEY = credentials('jenkins-ssh-id')  
         EC2_IP = '18.191.139.143' // Or use a Jenkins credential for this
         APP_DIR = '/home/ubuntu/nodejsapp'
     }
@@ -57,20 +57,20 @@ pipeline {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
                     script {
-                      try {
+                        try
+                        {
+                            withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-ssh-id', keyFileVariable: 'SSH_KEY')]) {
                         // Call the deployment script and pass parameters
                         sh """
                             # Step 1: Make the deployment script executable
-                            # chmod +x adds execute permissions to the script so it can be run
-                        
-                            chmod +x deploy.sh &&\
-                            
-                            # Step 2: Run the deployment script with parameters
-                            # ./deploy.sh executes the script, passing the SSH key, EC2 IP, and app directory as arguments
+                            chmod +x deploy.sh
 
+                            # Step 2: Run the deployment script with parameters
                             ./deploy.sh $SSH_KEY $EC2_IP $APP_DIR
-                         """
-                        }  catch (Exception e) {
+                        """
+                    } 
+                        }
+                      catch (Exception e) {
                             echo "Deployment failed: ${e}"
                             // Clean up hanging processes
                             sh 'pkill -f "ssh -i $SSH_KEY" || true'
