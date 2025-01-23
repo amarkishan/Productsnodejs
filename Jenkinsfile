@@ -7,8 +7,14 @@ pipeline {
     
     environment {
         SSH_KEY = credentials('jenkins-ssh-id')  
-        EC2_IP = '3.144.20.133' // Or use a Jenkins credential for this
+        EC2_IP = '3.129.218.33' // Or use a Jenkins credential for this
         APP_DIR = '/home/ubuntu/nodejsapp'
+    }
+    stage('Clean Workspace') 
+    {
+    steps {
+        cleanWs()
+    }
     }
     
     stages {
