@@ -6,8 +6,11 @@ pipeline {
     }
     
     environment {
+    
+        NODE_OPTIONS = '--max-old-space-size=4096'
+
         SSH_KEY = credentials('jenkins-ssh-id')  
-        EC2_IP = '3.129.218.33' // Or use a Jenkins credential for this
+        EC2_IP = '18.118.2.157' // Or use a Jenkins credential for this
         APP_DIR = '/home/ubuntu/nodejsapp'
     }
    
