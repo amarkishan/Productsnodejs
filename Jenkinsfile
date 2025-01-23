@@ -2,6 +2,7 @@ pipeline {
     agent any
     environment {
         // Define environment variables for EC2 IP and app directory
+        //SSH_KEY = credentials('jenkins-ssh-id')
         EC2_IP = '18.191.139.143'
         APP_DIR = '/home/ubuntu/nodejsapp'
     }
@@ -12,7 +13,7 @@ pipeline {
                     script {
                         try {
                             // Securely handle the SSH key using withCredentials
-                            withCredentials([sshUserPrivateKey(credentialsId: 'your-credentials-id', keyFileVariable: 'SSH_KEY')]) {
+                            withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-ssh-id', keyFileVariable: 'SSH_KEY')]) {
                                 sh """
                                     # Step 1: Sync files to EC2
                                     echo "Syncing files to EC2..."
