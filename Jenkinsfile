@@ -10,14 +10,16 @@ pipeline {
         EC2_IP = '3.129.218.33' // Or use a Jenkins credential for this
         APP_DIR = '/home/ubuntu/nodejsapp'
     }
-    stage('Clean Workspace') 
-    {
-    steps {
-        cleanWs()
-    }
-    }
+   
     
     stages {
+
+         stage('Clean Workspace') 
+         {
+            steps {
+                cleanWs()
+            }
+        }
         stage('Test Node.js') {
             steps {
                 sh 'node -v && npm -v'
