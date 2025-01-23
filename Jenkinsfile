@@ -1,94 +1,44 @@
 pipeline {
     agent any
-    
-    tools {
-        nodejs 'Nodejs' 
-    }
-    
     environment {
-    
-        NODE_OPTIONS = '--max-old-space-size=4096'
-
-        // SSH_KEY = credentials('jenkins-ssh-id')  
-        EC2_IP = '18.191.139.143' // Or use a Jenkins credential for this
+        // Define environment variables for EC2 IP and app directory
+        EC2_IP = '18.191.139.143'
         APP_DIR = '/home/ubuntu/nodejsapp'
     }
-   
-    
     stages {
-
-         stage('Clean Workspace') 
-         {
-            steps {
-                cleanWs()
-            }
-        }
-        stage('Test Node.js') {
-            steps {
-                sh 'node -v && npm -v'
-            }
-        }
-        
-        stage('Checkout Git Repository') {
-            steps {
-                git url: 'https://github.com/amarkishan/Productsnodejs.git', branch: 'main'
-            }
-        }
-
-        stage('install dependencies') {
-            steps {
-                // Cache node_modules if it exists
-                // cache(includes: 'node_modules/', excludes: '', name: 'node_modules_cache') {
-                //     sh 'npm ci' // Use npm ci for faster, reproducible builds
-                // }
-                sh 'npm install'
-            }
-        }   
-
-        stage('Build') {
-            steps {
-                
-                
-                sh 'npm run build'
-            }
-        }
-        
         stage('Deploy to EC2') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
                     script {
-                        try
-                        {
-                            withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-ssh-id', keyFileVariable: 'SSH_KEY')]) {
-                        // Call the deployment script and pass parameters
-                        sh """
-                            # Step 1: Make the deployment script executable
-                            chmod +x deploy.sh
+                        try {
+                            // Securely handle the SSH key using withCredentials
+                            withCredentials([sshUserPrivateKey(credentialsId: 'your-credentials-id', keyFileVariable: 'SSH_KEY')]) {
+                                sh """
+                                    # Step 1: Sync files to EC2
+                                    echo "Syncing files to EC2..."
+                                    rsync -avz -e "ssh -i $SSH_KEY" --exclude 'node_modules' ./ user@$EC2_IP:$APP_DIR
 
-                            # Step 2: Run the deployment script with parameters
-                            ./deploy.sh $SSH_KEY $EC2_IP $APP_DIR
-                        """
-                    } 
-                        }
-                      catch (Exception e) {
-                            echo "Deployment failed: ${e}"
-                            // Clean up hanging processes
-                            sh 'pkill -f "ssh -i $SSH_KEY" || true'
-                            sh 'pkill -f "rsync -avz" || true'
-                            error("Deployment stage failed")
+                                    # Step 2: SSH into EC2 and install dependencies
+                                    echo "Installing dependencies and starting the application on EC2..."
+                                    ssh -i "$SSH_KEY" user@$EC2_IP << 'EOF'
+                                        set -e # Stop if any command fails
+                                        cd $APP_DIR
+                                        npm install --omit=dev
+                                        # Start your application (e.g., using PM2 or npm start)
+                                        pm2 start app.js
+                                    EOF
+
+                                    echo "Deployment completed successfully!"
+                                """
+                            }
+                        } catch (Exception e) {
+                            // Handle errors gracefully
+                            echo "Deployment failed: ${e.getMessage()}"
+                            currentBuild.result = 'FAILURE'
                         }
                     }
                 }
             }
-        }
-    }
-    
-    post {
-        always {
-            echo "Pipeline completed (successfully or with errors)."
-        }
-        failure {
-            echo "Pipeline failed. Check the logs for details."
         }
     }
 }
