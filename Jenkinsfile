@@ -41,7 +41,7 @@ pipeline {
                 // cache(includes: 'node_modules/', excludes: '', name: 'node_modules_cache') {
                 //     sh 'npm ci' // Use npm ci for faster, reproducible builds
                 // }
-                npm install
+                sh 'npm install'
             }
         }   
 
