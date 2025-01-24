@@ -4,6 +4,7 @@ const { productSchema } = require('../models/productModel.js');
 
 
 
+
 //add product
 const addProduct =async(req,res) =>
     {
